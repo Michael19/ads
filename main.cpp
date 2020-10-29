@@ -1,20 +1,17 @@
 #include <iostream>
 
+#include "pqueue.h"
+
 using namespace std;
 
 int main()
 {
+    PQueue<int> queue;
+    queue.enqueue(1, 5);
+    queue.enqueue(2, 7);
+    queue.enqueue(4, 2);
+    queue.enqueue(4, 6);
+    queue.enqueue(4, 8);
 
-    int** r = nullptr;
-    if(!r)
-        std::cerr << " r is nullptr";
-
-    r = new int*[10];
-
-    for (int i = 0; i < 10; ++i) {
-        std::cout << r[i] <<std::endl;
-    }
-
-    cout << "Hello World!" << endl;
     return 0;
 }

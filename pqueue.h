@@ -1,6 +1,8 @@
 #ifndef PQUEUE_H
 #define PQUEUE_H
 
+#include <ostream>
+using namespace std;
 
 template<class T>
 struct PR_Element{
@@ -16,7 +18,18 @@ struct PR_Element{
 };
 
 template<class T>
+ostream& operator<<(ostream& os, const PQueue<T>& dt)
+{
+    os << dt._size << std::endl;
+    return os;
+}
+
+
+template<class T>
 class PQueue{
+public:
+    friend ostream& operator<<(ostream& os, const PQueue<T>& dt);
+
 public:
     PQueue():_data(nullptr), _priority(nullptr), _size(0){
 
@@ -41,25 +54,25 @@ public:
             if(_priority)
                 delete _priority;
 
-            _data = new T[SIZE_OF_BLOCKS_PRIORITY];
-            _priority = new PR_Element[SIZE_OF_BLOCKS_PRIORITY];
+            _data = new T*[SIZE_OF_BLOCKS_PRIORITY];
+            _priority = new PR_Element<T>[SIZE_OF_BLOCKS_PRIORITY];
         }
 
-        if(!(_size % SIZE_OF_BLOCKS)){
-            T* temp_data = new T[_size + SIZE_OF_BLOCKS];
-            int* temp_priority = new int[_size + SIZE_OF_BLOCKS];
+//        if(!(_size % SIZE_OF_BLOCKS)){
+//            T* temp_data = new T[_size + SIZE_OF_BLOCKS];
+//            int* temp_priority = new int[_size + SIZE_OF_BLOCKS];
 
-            for (int i = 0; i < _size; ++i) {
-                temp_data[i] = _data[i];
-                temp_priority[i] = _priority[i];
-            }
+//            for (int i = 0; i < _size; ++i) {
+//                temp_data[i] = _data[i];
+//                temp_priority[i] = _priority[i];
+//            }
 
-            delete[] _data;
-            delete[] _priority;
+//            delete[] _data;
+//            delete[] _priority;
 
-            _data = temp_data;
-            _priority = temp_priority;
-        }
+//            _data = temp_data;
+//            _priority = temp_priority;
+//        }
 
         bool is_insert = false;// check if data into deque
         int new_pos = _size+1;
@@ -97,41 +110,32 @@ public:
 
         if(!is_insert)
         {
-
-
-            if(!(_size % SIZE_OF_BLOCKS_PRIORITY))
+            if(!(_size % SIZE_OF_BLOCKS_PRIORITY) || new_pos <= _size)
             {
-                _priority
+                PR_Element<T>* _priority_temp = new PR_Element<T>[_size + SIZE_OF_BLOCKS_PRIORITY];
 
-                T* temp_data = new T[_size + SIZE_OF_BLOCKS_PRIORITY];
-
-                for (int j = 0; j < _size + SIZE_OF_BLOCKS_PRIORITY; ++j) {
+                for (int j = 0; j < _size; ++j)
+                {
                     if(j == new_pos)
                     {
-                        temp_data[j] = new T[SIZE_OF_BLOCKS];
-                        temp_data[j][]
+                        _priority_temp[j].pointer_to_data = new T[SIZE_OF_BLOCKS];
+                        _priority_temp[j].size++;
+                        _priority_temp[j].pointer_to_data[0] = item;
+                    }
+                    else if(j > new_pos){
+                        _priority_temp[j] = _priority[j];
+                    }
+                    else{
+                        _priority_temp[j] = _priority[j+1];
                     }
                 }
-
-
-                _data = new T*[_size + SIZE_OF_BLOCKS_PRIORITY];
             }
-
-
-
+            else{
+                _priority[_size].pointer_to_data = new T[SIZE_OF_BLOCKS];
+                _priority[_size].size++;
+                _priority[_size].pointer_to_data[0] = item;
+            }
         }
-
-        if(new_pos)
-
-        for (int i = new_pos; i < _size+1; ++i) {
-            _data[i+1] = _data[i];
-            _priority[i+1] = _priority[i];
-        }
-
-        _data[new_pos] = item;
-        _priority[new_pos] = priority;
-
-        _size++;
 
     }
 
@@ -154,11 +158,11 @@ private:
 
 private:
     T** _data; // данные
-    PR_Element* _priority; // массив указателей на данные, отсортированный по приоритетам
+    PR_Element<T>* _priority; // массив указателей на данные, отсортированный по приоритетам
     size_t _size; // количество приоритетов
 
-    const size_t SIZE_OF_BLOCKS;
-    const size_t SIZE_OF_BLOCKS_PRIORITY;
+    const size_t SIZE_OF_BLOCKS = 10;
+    const size_t SIZE_OF_BLOCKS_PRIORITY = 10;
 };
 
 #endif // PQUEUE_H
