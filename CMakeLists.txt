@@ -8,3 +8,4 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 add_executable(R main.cpp)
+add_executable(R2 main2.cpp)
