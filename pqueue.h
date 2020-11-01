@@ -20,6 +20,8 @@ struct PR_Element{
         this->pointer_to_data = other.pointer_to_data;
         this->priority = other.priority;
         this->size = other.size;
+
+        return *this;
     }
 
     bool is_empty()const{
@@ -77,7 +79,7 @@ public:
 
             if(i > new_pos){
                 //                if(!(_priority[i].is_empty()))
-                 buffer = _priority[i] ;
+                buffer = _priority[i] ;
 
                 _priority[i] =_priority[new_pos];
                 _priority[new_pos] = buffer;
@@ -87,6 +89,33 @@ public:
         }
         _priority[new_pos] = new_elem;
 
+    }
+
+    void resize_and_copy_data(PR_Element<T>& element){
+
+        if(!(element.size % SIZE_OF_BLOCKS)){
+            T* temp_data = new T[element.size + SIZE_OF_BLOCKS];
+            for (int i = 0; i < element.size; ++i) {
+                temp_data[i] = element.pointer_to_data[i];
+            }
+            for (int i = element.size; i < element.size + SIZE_OF_BLOCKS; ++i) {
+                temp_data[i] =0;
+            }
+            delete[] element.pointer_to_data;
+            element.pointer_to_data = temp_data;
+        }
+    }
+
+    void reduce(){
+
+        //        size_t count = (int(_size / SIZE_OF_BLOCKS_PRIORITY ) ? int(_size / SIZE_OF_BLOCKS_PRIORITY )  : 1) * SIZE_OF_BLOCKS_PRIORITY;
+        //        PR_Element<T>* temp_data = new PR_Element<T>[count];
+        for (int i = 0; i < _size; ++i) {
+            _priority[i] = _priority[i+1];
+        }
+        _size--;
+        //        delete[] _priority;
+        //        _priority = temp_data;
     }
 
     void enqueue(int priority, T item)
@@ -116,7 +145,7 @@ public:
             }
         }
 
-        std::cout << "new_pos = " << new_pos << std::endl;
+        //        std::cout << "new_pos = " << new_pos << std::endl;
 
         if(!(_size % SIZE_OF_BLOCKS_PRIORITY) && !is_insert && _size > 0){
             // resize and copy data;
@@ -128,6 +157,10 @@ public:
             copy_priority(new_pos);
         }
 
+        if(!(_priority[new_pos].size % SIZE_OF_BLOCKS) && _priority[new_pos].size > 0){
+            resize_and_copy_data(_priority[new_pos]);
+        }
+
         _priority[new_pos].pointer_to_data[_priority[new_pos].size] = item;
         _priority[new_pos].size++;
 
@@ -136,91 +169,6 @@ public:
             _priority[new_pos].priority = priority;
             _size++;
         }
-
-#if 0
-
-
-        bool is_insert = false;// check if data into deque
-        int new_pos = _size;
-        if(new_pos != 0){
-            for (int i = 0; i < _size; ++i) {
-                if(_priority[i].priority == priority){
-                    // в очереди есть с таким приоритетом
-
-                    if(!(_priority[i].size % SIZE_OF_BLOCKS)){
-                        T* temp_data = new T[_priority[i].size + SIZE_OF_BLOCKS];
-
-                        for (int j = 0; j < _priority[i].size + SIZE_OF_BLOCKS; ++j) {
-                            temp_data[j] = _priority[i].pointer_to_data[j];
-                        }
-
-                        delete[] _priority[i].pointer_to_data;
-
-                        _priority[i].pointer_to_data = temp_data;
-
-                    }
-                    is_insert != true;
-                    break;
-                }
-                else if(_priority[i].priority < priority){
-                    // данные с наивысшем приоритетом
-                    new_pos = 0;
-                    break;
-                }
-
-                else if(_priority[i].priority > priority && _priority[i+1].priority < priority){
-                    // данные с новым промежуточным приоритетом
-                    new_pos = i+1;
-                    break;
-                }
-            }
-        }
-
-        if(!is_insert)
-        {
-            if(!(_size % SIZE_OF_BLOCKS_PRIORITY) || new_pos < _size)
-            {
-                PR_Element<T>* _priority_temp = nullptr;
-                if(!(_size % SIZE_OF_BLOCKS_PRIORITY))
-                {
-                    _priority_temp =   new PR_Element<T>[_size + SIZE_OF_BLOCKS_PRIORITY];
-                }
-                else{
-                    _priority_temp =   new PR_Element<T>[int(_size / SIZE_OF_BLOCKS_PRIORITY) * SIZE_OF_BLOCKS_PRIORITY];
-                }
-                _size++;
-
-                for (int j = 0; j < _size; ++j)
-                {
-                    if(j == new_pos)
-                    {
-                        _priority_temp[j].pointer_to_data = new T[SIZE_OF_BLOCKS];
-                        _priority_temp[j].size++;
-                        _priority_temp[j].pointer_to_data[0] = item;
-                        _priority_temp[j].priority=priority;
-                    }
-                    else if(j > new_pos){
-                        _priority_temp[j] = _priority[j-1];
-                        std::cout << "_priority_temp[j].pointer_to_data[0] " << _priority_temp[j].pointer_to_data[0] << std::endl;
-                    }
-                    else{
-                        _priority_temp[j] = _priority[j];
-                    }
-                }
-
-                delete[] _priority;
-                _priority = _priority_temp;
-            }
-            else
-            {
-                _priority[_size].pointer_to_data = new T[SIZE_OF_BLOCKS];
-                _priority[_size].size++;
-                _priority[_size].pointer_to_data[0] = item;
-            }
-        }
-
-#endif
-
     }
 
     T dequeue(){
@@ -229,15 +177,22 @@ public:
 
             T out = _priority[0].pointer_to_data[0];
 
-            T* temp_data = _priority[0].pointer_to_data;
-            _priority[0].pointer_to_data = temp_data[1];
 
-            delete temp_data;
+            if(_priority[0].size == 1)
+            {
+                delete[] _priority[0].pointer_to_data;
+
+                reduce();
+            }
+            else {
+
+                for (int j = 0; j < _priority[0].size; ++j) {
+                    _priority[0].pointer_to_data[j] = _priority[0].pointer_to_data[j+1];
+                }
+                _priority[0].size--;
+            }
             return out;
-
-
         }
-
         return T();
     }
 
@@ -266,7 +221,7 @@ private:
     PR_Element<T>* _priority; // массив указателей на данные, отсортированный по приоритетам
     size_t _size; // количество приоритетов
 
-    const size_t SIZE_OF_BLOCKS = 1000;
+    const size_t SIZE_OF_BLOCKS = 2000;
     const size_t SIZE_OF_BLOCKS_PRIORITY = 20;
 };
 
