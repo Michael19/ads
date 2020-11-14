@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <utility>
+#include "insertion_sort.h"
+#include <thread>
 
 enum VertexType{
 
@@ -97,5 +99,55 @@ void heap_sort(T* data, size_t size)
         DrownStack(data, 0, s);
     }
 }
+
+template<class T>
+void merge(T* data, size_t size, int middle){
+
+    T* merged = new T[size];
+
+    int idx_min_f = 0, idx_min_s = 0;
+
+    for (int i = 0; i < size; ++i) {
+
+        if(idx_min_f == middle || (middle + idx_min_s != size && data[idx_min_f] >= data[middle + idx_min_s]))
+        {
+            merged[i] = data[middle + idx_min_s];
+            idx_min_s++;
+        }
+        else
+            merged[i] = data[idx_min_f++];
+    }
+
+    for (int i = 0; i < size; ++i) {
+        data[i] = merged[i];
+    }
+    delete[] merged;
+
+}
+
+template<class T>
+void partion_sort(T* data, size_t size, size_t min_size)
+{
+    if(size <= min_size){
+        std::thread t1(insertion_sort<T>, data, size);
+        t1.detach();
+        return;
+    }
+
+    partion_sort(data, std::floor(size/ 2), min_size);
+    T* part = data + static_cast<int>(std::floor(size/ 2));
+    partion_sort(part, size - std::floor(size/ 2), min_size);
+
+    merge(data, size, static_cast<int>(std::floor(size/ 2)));
+
+}
+
+template<class T>
+void mergesort(T* data, size_t size, size_t min_size)
+{
+    partion_sort(data, size, min_size);
+
+}
+
 
 #endif

@@ -7,7 +7,7 @@ void insertion_sort(T* data, size_t size){
     for (int j = 0; j < size; ++j) {
         T key = data[j];
         i = j-1;
-        while(i > 0 && data[i] > key)
+        while(i >= 0 && data[i] > key)
         {
             data[i+1] = data[i];
             i--;
