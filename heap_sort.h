@@ -16,13 +16,13 @@ int vertex(int i, VertexType t){
 
     switch (t) {
     case VertexType::Parent:
-        return std::floor((i-1) / 2);
+        return i ? std::floor((i-1) / 2) : 0;
         break;
     case VertexType::LeftChild:
-        return i * 2;
+        return i * 2 + 1;
         break;
     default:
-        return i * 2 + 1;
+        return i * 2 + 2;
         break;
     }
 
@@ -34,10 +34,10 @@ void Drown(T* data, int i, size_t size){
     int right = vertex(i, VertexType::RightChild);
 
     int largest = i;
-    if( left <= size && data[left] > data[right])
+    if( left < size && data[left] > data[right])
         largest = left;
 
-    if(right <= size && data[right] > data[largest])
+    if(right < size && data[right] > data[largest])
         largest = right;
 
     if(largest != i){
@@ -48,9 +48,35 @@ void Drown(T* data, int i, size_t size){
 }
 
 template<class T>
+void DrownStack(T* data, int i, size_t size){
+    int largest = i;
+
+    do
+    {
+        int left = vertex(i, VertexType::LeftChild);
+        int right = vertex(i, VertexType::RightChild);
+
+        i = largest;
+
+        if( left < size && data[left] > data[right])
+            largest = left;
+
+        if(right < size && data[right] > data[largest])
+            largest = right;
+
+        if(largest != i){
+            std::swap(data[i], data[largest]);
+            //            Drown(data, largest, size);
+        }
+
+    }while(largest != i);
+
+}
+
+template<class T>
 void BuildHeap(T* data, size_t size){
-    for (int i =  std::floor((size - 1) / 2); i > 0 ;--i) {
-        Drown(data, i, size);
+    for (int i =  std::floor((size - 1) / 2); i >= 0 ;--i) {
+        DrownStack(data, i, size);
     }
 }
 
@@ -65,10 +91,10 @@ void heap_sort(T* data, size_t size)
     std::cout <<std::endl;
 
     size_t s = size;
-    for (int i = size - 1; i > 1; --i) {
+    for (int i = size - 1; i >= 1; --i) {
         s--;
         std::swap(data[0], data[i]);
-        Drown(data, 0, s);
+        DrownStack(data, 0, s);
     }
 }
 
